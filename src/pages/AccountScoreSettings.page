@@ -1,0 +1,255 @@
+<apex:page sidebar="false" controller="AccountScoreSettingsController" standardStylesheets="false" docType="html-5.0">
+
+<apex:includeScript value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/external/jquery/jquery.js')}"  />
+<apex:includeScript value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/jquery-ui.min.js')}"  />
+<apex:stylesheet value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/jquery-ui.css')}"  />
+
+<apex:includeScript value="{!URLFOR($Resource.AccountActivityResources, 'AccountActivityResources/scripts/jqueryeasyWizard.js')}"  />
+<!-- <apex:includeScript value="{!$Resource.jqueryeasyWizard}"  /> -->
+<apex:stylesheet value="{!URLFOR($Resource.AccountActivityResources, 'AccountActivityResources/css/style.css')}"  />
+<!-- <apex:stylesheet value="{!$Resource.bootstrap}"  /> -->
+<style>
+.pagePanel{
+    width:800px; 
+    height:500px;
+    padding: 0px;
+    overflow : hidden; 
+    margin-left:10%;    
+    border:1px solid #5C5C5C;
+    text-align:center;
+    background: #eeeeee;
+}
+.hero-unit{
+    padding: 20px;
+}
+</style>
+<script>
+    j$ = jQuery.noConflict();
+    j$( document ).ready(function() {
+        j$('#myWizard').easyWizard({
+            showSteps: false,
+            showButtons: false,
+            submitButton: false
+        });
+        j$('#myWizardPager .previous a').bind('click', function(e) {
+            e.preventDefault();
+            j$('#myWizard').easyWizard('prevStep');
+        });
+        j$('#myWizardPager .page1 a').bind('click', function(e) {
+            e.preventDefault();
+            j$('#myWizard').easyWizard('goToStep', 1);
+        });
+        j$('#myWizardPager .page2 a').bind('click', function(e) {
+            e.preventDefault();
+            j$('#myWizard').easyWizard('goToStep', 2);
+        });
+        j$('#myWizardPager .page3 a').bind('click', function(e) {
+            e.preventDefault();
+            j$('#myWizard').easyWizard('goToStep', 3);
+        });
+        j$('#myWizardPager .page4 a').bind('click', function(e) {
+            e.preventDefault();
+            j$('#myWizard').easyWizard('goToStep', 4);
+        });
+        j$('#myWizardPager .page5 a').bind('click', function(e) {
+            e.preventDefault();
+            j$('#myWizard').easyWizard('goToStep', 5);
+        });
+        j$('#myWizardPager .next a').bind('click', function(e) {
+            e.preventDefault();
+            j$('#myWizard').easyWizard('nextStep');
+        });
+    });
+    function toggleCampaignType(){
+        j$('.campaignTypePanel').toggle(400);
+    }
+    
+
+</script>
+<apex:form >
+    <div class="pagePanel" >    
+        <div style="width: 100%; background : #5C5C5C;padding:10px;font-size:250%; color:white;">Account Activity Configuration</div>
+
+        <div id="myWizard" style="height:360px;">
+            <section class="step" data-step-title="page">
+                <div class="hero-unit" style="margin-top:100px;">
+                    <table style="margin: 0 auto;"><tr><td style="font-weight:bold;font-size:250%;font-family:arial;">Choose your Day Range</td><td> <div title="This field will specify a historical day range in which Activies & Campaign Members are considered relevant."><img src="{!URLFOR($Resource.AccountActivityResources, 'AccountActivityResources/images/questionMark.png')}"/></div> </td></tr></table>  
+                        <apex:inputField value="{!activitySettings.Day_Range__c}" style="width:50px;font-size:250%;"/>               
+                </div>
+            </section>
+            <section class="step" data-step-title="page">
+                <div class="hero-unit" style="font-size:150%;margin-top:30px;">
+                    <h1>Select Campaign Member Status to Include</h1>
+                    <apex:outputPanel id="CampaignMemberStatusPanel" layout="block" style="text-align:center;margin-top:10px;height:350px; overflow: auto;">
+                        <div style="display: inline-block;">
+                        <table class="statsTable" >
+                        <tr>
+                        <th class="statsHeader" style="font-weight:normal;padding: 5px 20px;">
+                            Campaign Member Status
+                        </th>
+                        <th class="statsHeader" style="font-weight:normal;padding: 5px 20px;">
+                            Include
+                        </th>
+                        </tr>
+                        <apex:repeat value="{!campaignMemberStatusList}" var="CS">
+                            <tr>
+                            <td>
+                                {!CS.selectorLabel}
+                            </td>
+                            <td>
+                                <apex:inputCheckbox value="{!CS.isSelected}" />
+                            </td>
+                            </tr>
+                        </apex:repeat>
+                        </table>
+                        </div>
+                    </apex:outputPanel>
+
+                </div>
+            </section>
+            <section class="step" data-step-title="page">
+                <div class="hero-unit" style="font-size:150%;">
+                    <h1>Select Task Types and Statuses to Include</h1>
+                    <apex:outputPanel id="ActivityTypesPanel" layout="block" style="text-align:center;margin-top:10px;height:350px; overflow: hidden;">
+                        <div style="display: inline-block;">
+                        <table>
+                        <tr>
+                        <td>
+                            <div style="height:300px; overflow: auto;">
+                            <table class="statsTable" >
+                            <tr>
+                            <th class="statsHeader" style="font-weight:normal;padding: 5px 20px;">
+                                Task Type
+                            </th>
+                            <th class="statsHeader" style="font-weight:normal;padding: 5px 20px;">
+                                Include
+                            </th>
+                            </tr>
+                            <apex:repeat value="{!TaskTypeList}" var="AT">
+                                <tr>
+                                <td>
+                                    {!AT.selectorLabel}
+                                </td>
+                                <td>
+                                    <apex:inputCheckbox value="{!AT.isSelected}" />
+                                </td>
+                                </tr>
+                            </apex:repeat>
+                            </table>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="height:300px; overflow: auto;">
+                            <table class="statsTable" >
+                            <tr>
+                            <th class="statsHeader" style="font-weight:normal;padding: 5px 20px;">
+                                Task Status
+                            </th>
+                            <th class="statsHeader" style="font-weight:normal;padding: 5px 20px;">
+                                Include
+                            </th>
+                            </tr>
+                            <apex:repeat value="{!TaskStatusList}" var="TS">
+                                <tr>
+                                <td>
+                                    {!TS.selectorLabel}
+                                </td>
+                                <td>
+                                    <apex:inputCheckbox value="{!TS.isSelected}" />
+                                </td>
+                                </tr>
+                            </apex:repeat>
+                            </table>
+                            </div>
+                        </td>
+                        </tr>
+                        </table>
+                        </div>
+                    </apex:outputPanel>
+                </div>
+            </section>
+            <section class="step" data-step-title="page">
+                <div class="hero-unit" style="font-size:150%;">
+                    <h1>Select Event Types to Include</h1>
+                    <apex:outputPanel id="EventTypesPanel" layout="block" style="text-align:center;margin-top:10px;height:350px; overflow: hidden;">
+                        <div style="display: inline-block;height:300px; overflow: auto;">
+                            <table class="statsTable" >
+                            <tr>
+                            <th class="statsHeader" style="font-weight:normal;padding: 5px 20px;">
+                                Event Type
+                            </th>
+                            <th class="statsHeader" style="font-weight:normal;padding: 5px 20px;">
+                                Include
+                            </th>
+                            </tr>
+                            <apex:repeat value="{!EventTypeList}" var="ET">
+                                <tr>
+                                <td>
+                                    {!ET.selectorLabel}
+                                </td>
+                                <td>
+                                    <apex:inputCheckbox value="{!ET.isSelected}" />
+                                </td>
+                                </tr>
+                            </apex:repeat>
+                            </table>                           
+                        </div>
+                    </apex:outputPanel>
+                </div>
+            </section>
+            <section class="step" data-step-title="page">
+                <div class="hero-unit" style="font-size:150%;">
+                    <h1>Run Account Scoring Options</h1>
+                    <!-- <p> Daily Run Time &nbsp;<apex:input type="time" value="{!scheduledDateTime}" /> </p> -->
+                    <p><apex:commandLink styleClass="leanDataButton orangeButton" value="Schedule Run" action="{!scheduleAccountScoring}" onComplete="alert('Job has been scheduled for 12 AM.');" rerender="x" /></p>
+                    <p><apex:commandLink styleClass="leanDataButton orangeButton" value="One Time Run" action="{!runAccountScoring}" onComplete="alert('One Time Run is in process.');" rerender="x" /></p>
+                </div>
+            </section>
+        </div>
+        <div id="myWizardPager" style="display: inline-block;">
+            <table>
+            <tr>
+            <td>
+            <div class="previous">
+                <a href="#" class="leanDataButton blueButton" style="width:90px;font-size:150%;text-align:center;"> Previous </a>
+            </div>
+            </td>
+            <td>
+            <div class="page1">
+                <a href="#" class="leanDataButton blueButton" style="width:30px;font-size:150%;text-align:center;" > 1 </a>
+            </div>
+            </td>
+            <td>
+            <div class="page2">
+                <a href="#" class="leanDataButton blueButton" style="width:30px;font-size:150%;text-align:center;"> 2 </a>
+            </div>
+            </td>
+            <td>
+            <div class="page3">
+                <a href="#" class="leanDataButton blueButton" style="width:30px;font-size:150%;text-align:center;"> 3 </a>
+            </div>
+            </td>
+            <td>
+            <div class="page4">
+                <a href="#" class="leanDataButton blueButton" style="width:30px;font-size:150%;text-align:center;"> 4 </a>
+            </div>
+            </td>
+            <td>
+            <div class="page5">
+                <a href="#" class="leanDataButton blueButton" style="width:30px;font-size:150%;text-align:center;"> 5 </a>
+            </div>
+            </td>
+            <td>
+            <div class="next">
+                <a href="#" class="leanDataButton blueButton" style="width:90px;font-size:150%;"> Next </a>
+            </div>
+            </td>
+            </tr>
+            </table>
+        </div>
+        
+        <div style="width: 100%; background : #5C5C5C;text-align:right;padding:10px;margin-top:10px;"><img src="{!URLFOR($Resource.AccountActivityResources, 'AccountActivityResources/images/whitelogo.png')}" class="leandata_logo" height="20px;" style="vertical-align: top;margin-right:20px;"/></div>
+
+    </div>
+</apex:form>    
+</apex:page>
