@@ -126,17 +126,14 @@ public with sharing class AccountScoreSettingsController {
                 selectedTaskStatus += TS.selectorLabel + ',';
         }
         
-        if( selectedTaskType.endsWith( ',' ) )
-            activitySettings.Included_Campaign_Member_Status__c = selectedCampaignMemberStatus.substring(0, selectedCampaignMemberStatus.length()-1);
-            
-        if( selectedTaskType.endsWith( ',' ) )        
-            activitySettings.Included_Event_Type__c = selectedEventType.substring(0, selectedEventType.length()-1);
-            
-        if( selectedTaskType.endsWith( ',' ) )
-            activitySettings.Included_Task_Status__c = selectedTaskStatus.substring(0, selectedTaskStatus.length()-1);
-            
-        if( selectedTaskType.endsWith( ',' ) )       
-            activitySettings.Included_Task_Type__c = selectedTaskType.substring(0, selectedTaskType.length()-1);
+
+        activitySettings.Included_Campaign_Member_Status__c = selectedCampaignMemberStatus.substring(0, selectedCampaignMemberStatus.length()-1);
+        
+        activitySettings.Included_Event_Type__c = selectedEventType.substring(0, selectedEventType.length()-1);
+        
+        activitySettings.Included_Task_Status__c = selectedTaskStatus.substring(0, selectedTaskStatus.length()-1);
+       
+        activitySettings.Included_Task_Type__c = selectedTaskType.substring(0, selectedTaskType.length()-1);
                 
         upsert( activitySettings );
     }
@@ -154,8 +151,7 @@ public with sharing class AccountScoreSettingsController {
             System.debug( 'No old scheduled job to delete');
         }
         AccountScoringScheduling SC = new AccountScoringScheduling(); 
-        String sch = '0 00 00 * * ?'; 
-        sch = '0 0 00 ? * MON-SUN' ;
+        String sch = '0 0 00 ? * MON-SUN' ;
         String jobID = system.schedule('Account Scoring', sch, SC );
     }
 
