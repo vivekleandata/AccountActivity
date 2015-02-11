@@ -4,32 +4,34 @@ public class AccountScoringBatch implements Database.Batchable<sObject>, Databas
     public List<String> includedTaskTypes { get;set; }
     public List<String> includedEventTypes { get;set; }
     public List<String> includedTaskStatus { get;set; }
-    public ActivityScoreSettings__c activitySettings { get;set; }
     
     public AccountScoringBatch(){
-        activitySettings = ActivityScoreSettings__c.getOrgDefaults();
-        includedCampaignMemberStatus = activitySettings.Included_Campaign_Member_Status__c.split(',');
-        dayRange = Integer.ValueOf( activitySettings.Day_Range__c );
-        includedTaskTypes = activitySettings.Included_Task_Type__c.split(',');
-        includedEventTypes = activitySettings.Included_Event_Type__c.split(',');
-        includedTaskStatus = activitySettings.Included_Task_Status__c.split(',');
+        //Get Day Range
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'DayRange' ] ){
+            dayRange = Integer.ValueOf( activityScoreSetting.Value__c );
+        }
         
         if( dayRange == null )
             dayRange = 0;
         
-        if( includedCampaignMemberStatus == null)
-            includedCampaignMemberStatus = new List<String>();
-            
-        if( includedTaskTypes == null)
-            includedTaskTypes = new List<String>();
-        
-        if( includedEventTypes == null)
-            includedEventTypes = new List<String>();
-        
-        if( includedTaskStatus == null)
-            includedTaskStatus = new List<String>();            
-                
-        
+        //Get Include Lists
+        includedCampaignMemberStatus = new List<String>();
+        includedTaskTypes = new List<String>();
+        includedEventTypes = new List<String>();
+        includedTaskStatus = new List<String>();            
+          
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'CampaignMemberStatus' ] ){
+            includedCampaignMemberStatus.add( activityScoreSetting.Value__c );
+        }
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'TaskType' ] ){
+            includedTaskTypes.add( activityScoreSetting.Value__c );
+        }
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'CampaignMemberStatus' ] ){
+            includedEventTypes.add( activityScoreSetting.Value__c );
+        }
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'TaskStatus' ] ){
+            includedTaskStatus.add( activityScoreSetting.Value__c );
+        }
         System.debug( ' Account Scoring Day Range ' + dayRange);
         System.debug( ' Account Scoring Task Types ' + includedTaskTypes);
         System.debug( ' Account Scoring Campaign Member Status' + includedCampaignMemberStatus);

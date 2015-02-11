@@ -1,5 +1,4 @@
 public with sharing class AccountScoreSettingsController {
-    public ActivityScoreSettings__c activitySettings { get;set; }
     public List<genericSelector> CampaignMemberStatusList { get;set; }
     public List<genericSelector> ActivityTypeList { get; set; }
     public List<genericSelector> TaskTypeList { get; set; }
@@ -7,11 +6,12 @@ public with sharing class AccountScoreSettingsController {
     public List<genericSelector> TaskStatusList { get; set; }
     public List<genericSelector> EventStatusList { get; set; }
     public Time scheduledDateTime { get; set; }
+    public Integer dayRange { get;set; }
     
     public Class genericSelector Implements Comparable{
         public String selectorLabel { get;set; }
         public Boolean isSelected { get;set; }
-        
+
         public genericSelector( String t ){
             selectorLabel = t;
             isSelected = false;
@@ -28,21 +28,31 @@ public with sharing class AccountScoreSettingsController {
     }
     
     public AccountScoreSettingsController(){
-        activitySettings = ActivityScoreSettings__c.getOrgDefaults();
         CampaignMemberStatusList = new List<genericSelector>();
+        
+        //Set Day Range
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'DayRange' ] ){
+            if( activityScoreSetting.Value__c != null )
+                dayRange = Integer.ValueOf( activityScoreSetting.Value__c );
+        }
+        
+        if( dayRange == null )
+            dayRange = 90;
         
         //Select Campaign Member Statuses
         Set<String> campaignMemberStatusSet = new Set<String>();
+        Set<String> selectedCampaignMemberStatus = new Set<String>();
+        
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'CampaignMemberStatus' ] ){
+            selectedCampaignMemberStatus.add( activityScoreSetting.Value__c );
+        }
         
         for( CampaignMemberStatus stat : [ SELECT Label From CampaignMemberStatus ]){
             campaignMemberStatusSet.add( stat.Label );
         }
 
         for( String statusLabel : campaignMemberStatusSet ){
-            if( activitySettings.Included_Campaign_Member_Status__c == null ){
-                CampaignMemberStatusList.add( new genericSelector ( statusLabel ));
-            }
-            else if( activitySettings.Included_Campaign_Member_Status__c.contains( statusLabel ) ){
+            if( selectedCampaignMemberStatus.contains( statusLabel ) ){
                 CampaignMemberStatusList.add( new genericSelector ( statusLabel , true ));
             }
             else{
@@ -57,11 +67,21 @@ public with sharing class AccountScoreSettingsController {
         List<Schema.PicklistEntry> eventTypes = Event.Type.getDescribe().getPicklistValues();
         List<Schema.PicklistEntry> taskTypes = Task.Type.getDescribe().getPicklistValues();
         
+        //Get Current Settings
+        Set<String> selectedEventTypes = new Set<String>();
+        
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'EventType' ] ){
+            selectedEventTypes.add( activityScoreSetting.Value__c );
+        }
+        
+        Set<String> selectedTaskTypes = new Set<String>();
+        
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'TaskType' ] ){
+            selectedTaskTypes.add( activityScoreSetting.Value__c );
+        }
+        
         for( Schema.PickListEntry eventType : eventTypes ){
-            if( activitySettings.Included_Event_Type__c == null ){
-                EventTypeList.add( new GenericSelector( eventType.getLabel() ) );
-            }
-            else if( activitySettings.Included_Event_Type__c.contains( eventType.getLabel() ) ){
+            if( selectedEventTypes.contains( eventType.getLabel() ) ){
                 EventTypeList.add( new GenericSelector( eventType.getLabel(), true ) );
             }
             else{
@@ -70,10 +90,7 @@ public with sharing class AccountScoreSettingsController {
         }
         
         for( Schema.PickListEntry taskType : taskTypes ){
-            if( activitySettings.Included_Task_Type__c == null ){
-                TaskTypeList.add( new GenericSelector( taskType.getLabel() ) );
-            }
-            else if( activitySettings.Included_Task_Type__c.contains( taskType.getLabel() ) ){
+            if( selectedTaskTypes.contains( taskType.getLabel() ) ){
                 TaskTypeList.add( new GenericSelector( taskType.getLabel() , true ) );
             }
             else{
@@ -87,12 +104,15 @@ public with sharing class AccountScoreSettingsController {
         TaskStatusList = new List<genericSelector>();
 
         List<Schema.PicklistEntry> taskStatuses = Task.Status.getDescribe().getPicklistValues();
+        
+        Set<String> selectedTaskStatus = new Set<String>();
+        
+        for( Activity_Score_Setting__c activityScoreSetting : [ SELECT Type__c, Value__c FROM Activity_Score_Setting__c WHERE Type__c = 'TaskStatus' ] ){
+            selectedTaskStatus.add( activityScoreSetting.Value__c );
+        }
              
         for( Schema.PickListEntry taskStatus : taskStatuses ){
-            if( activitySettings.Included_Task_Status__c == null ){
-                TaskStatusList.add( new GenericSelector( taskStatus.getLabel() ) );
-            }
-            else if( activitySettings.Included_Task_Status__c.contains( taskStatus.getLabel() ) ){
+            if( selectedTaskStatus.contains( taskStatus.getLabel() ) ){
                 TaskStatusList.add( new GenericSelector( taskStatus.getLabel() , true ) );
             }
             else{
@@ -104,38 +124,34 @@ public with sharing class AccountScoreSettingsController {
         
     }
     public void saveAccountScoringSettings(){
-        String selectedCampaignMemberStatus = ':~!~,'; //A dummy value that won't pass just in case they have selected 0 statuses/types etc. ( Might not be best practice, will look into this )
-        String selectedTaskType = ':~!~,';
-        String selectedEventType = ':~!~,';
-        String selectedTaskStatus =':~!~,';
+        List<Activity_Score_Setting__c> oldSettings = [ SELECT id FROM Activity_Score_Setting__c ];
+        delete ( oldSettings );
+        
+        List<Activity_Score_Setting__c> newSettings = new List<Activity_Score_Setting__c>();
         
         for( genericSelector CMS : CampaignMemberStatusList ){
             if( CMS.isSelected )
-                selectedCampaignMemberStatus += CMS.selectorLabel + ',';
+                newSettings.add( new Activity_Score_Setting__c( Type__c ='CampaignMemberStatus', Value__c = CMS.selectorLabel , Name = 'CampaignMemberStatus' + CMS.selectorLabel));
         }
         for( genericSelector TT : TaskTypeList ){
             if( TT.isSelected )
-                selectedTaskType += TT.selectorLabel + ',';
+                newSettings.add( new Activity_Score_Setting__c( Type__c ='TaskType', Value__c = TT.selectorLabel, Name = 'TaskType' + TT.selectorLabel));
         }
         for( genericSelector ET : EventTypeList ){
             if( ET.isSelected )
-                selectedEventType += ET.selectorLabel + ',';
+                newSettings.add( new Activity_Score_Setting__c( Type__c ='EventType', Value__c = ET.selectorLabel, Name = 'EventType' + ET.selectorLabel));
         }
         for( genericSelector TS : TaskStatusList ){
             if( TS.isSelected )
-                selectedTaskStatus += TS.selectorLabel + ',';
+                newSettings.add( new Activity_Score_Setting__c( Type__c ='TaskStatus', Value__c = TS.selectorLabel, Name = 'TaskStatus' + TS.selectorLabel));
         }
         
+        if( dayRange == null )
+            dayRange = 90;
+            
+        newSettings.add( new Activity_Score_Setting__c( Type__c ='DayRange', Value__c = String.ValueOf( dayRange ) , Name='DayRange' ));
 
-        activitySettings.Included_Campaign_Member_Status__c = selectedCampaignMemberStatus.substring(0, selectedCampaignMemberStatus.length()-1);
-        
-        activitySettings.Included_Event_Type__c = selectedEventType.substring(0, selectedEventType.length()-1);
-        
-        activitySettings.Included_Task_Status__c = selectedTaskStatus.substring(0, selectedTaskStatus.length()-1);
-       
-        activitySettings.Included_Task_Type__c = selectedTaskType.substring(0, selectedTaskType.length()-1);
-                
-        upsert( activitySettings );
+        insert( newSettings );
     }
     public void runAccountScoring(){
         saveAccountScoringSettings();

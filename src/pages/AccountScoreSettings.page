@@ -74,7 +74,7 @@
             <section class="step" data-step-title="page">
                 <div class="hero-unit" style="margin-top:100px;">
                     <table style="margin: 0 auto;"><tr><td style="font-weight:bold;font-size:250%;font-family:arial;">Choose your Day Range</td><td> <div title="This field will specify a historical day range in which Activies & Campaign Members are considered relevant."><img src="{!URLFOR($Resource.AccountActivityResources, 'AccountActivityResources/images/questionMark.png')}"/></div> </td></tr></table>  
-                        <apex:inputField value="{!activitySettings.Day_Range__c}" style="width:50px;font-size:250%;"/>               
+                        <apex:inputText value="{!dayRange}" style="width:50px;font-size:250%;"/>               
                 </div>
             </section>
             <section class="step" data-step-title="page">
