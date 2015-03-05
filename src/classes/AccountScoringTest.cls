@@ -1,7 +1,8 @@
-@isTest           ( SeeAllData = True )                  
+@isTest ( SeeAllData = True )                  
 private class AccountScoringTest {
     static testmethod void testAccountScoreSettingsController(){
         AccountScoreSettingsController con = new AccountScoreSettingsController();
+        con.dayRange = 100;
         con.saveAccountScoringSettings();
         
         Account a = new Account( Name='Test Acc' );

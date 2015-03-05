@@ -1,0 +1,398 @@
+<apex:page sideBar="false" controller="AccountBaseFunnelController" standardStylesheets="false" >
+
+<apex:includeScript value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/external/jquery/jquery.js')}"  />
+<apex:includeScript value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/jquery-ui.min.js')}"  />
+
+<apex:stylesheet value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/jquery-ui.css')}"  />
+
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet" media="screen"/>
+<apex:includeScript value="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"/>
+
+<script>
+function barHoverText(e,divid,stat1){
+
+    var left  = e.clientX + 10 + "px";
+    var top  = e.clientY + 10 + "px";
+
+    var div = document.getElementById(divid);
+
+    div.style.left = left;
+    div.style.top = top;
+    div.innerHTML = stat1 ;
+    $("#"+divid).toggle();
+    return false;
+}
+function openAccountView( qmode ){
+    window.open( '/apex/ObjectSummary?objt=Account&specialQueryMode='+ qmode, target="_blank" );
+}
+</script>
+
+<style>
+
+.mainPanel{
+    width: 100%;
+    display: inline-block;
+}
+.headerPanel{
+    width: 85%;
+    font-size: 300%;
+    text-align: center;
+    padding: 10px;
+    margin-left: 15%;
+    height: 75px;
+}
+.funnelPanel{
+    width: 85% ;
+    max-width: 1000px;
+    float: left;
+    display: inline-block;
+}
+.graphsPanel{
+    margin-top: 75px;
+    width: 15%;
+    float: left;
+    display: inline-block;
+    text-align:center;
+}
+.overViewPanel{
+    width: 100%;
+    display: inline-block;
+}
+.funnelRowPanel{
+    width: 100%;
+    margin-top: 20px;
+    display: inline-block;
+}
+.overViewInfo{
+    width: 15%;
+    display: inline-block;
+    vertical-align:middle;
+    color: #E1E1E1;
+}
+.funnelInfo{
+    width: 15%;
+    text-align:center;
+    display: inline-block;
+}
+.overViewPanel{
+    height: 60px;
+
+}
+.overviewSection{
+    text-align: center;
+    vertical-align: middle;  
+    font-size: 120%;
+    color: #E1E1E1;
+    float: left;
+    width: 100%;
+    height: 60px;
+}
+.infoPanel{
+    height: 110px;
+    
+}
+.infoSection{
+    text-align: center;
+    vertical-align: middle;  
+    font-size: 120%;
+    color: #E1E1E1;
+    float:left;
+    height: 110px;
+    width: 100%;
+    padding-right: 5px;    
+}
+.overViewBarWrapper{
+    width: 85%;
+    text-align:center;
+    display: inline-block;
+}
+.funnelBarWrapper{
+    width: 85%;
+    text-align:center;
+    display: inline-block;
+}
+.overViewBar{
+    width: 100%;
+    height: 20px;
+}
+.funnelBar{
+    height: 110px;
+}
+.bar1{
+    width: 80%;
+    margin-left: 10%;
+}
+.bar2{
+    width: 60%;
+    margin-left: 20%;
+}
+.bar3{
+    width: 40%;
+    margin-left: 30%;
+}
+.bar4{
+    width: 20%;
+    margin-left: 40%;
+}
+.middleBarWrapper{
+    text-align: center;
+    vertical-align: middle;
+    line-height: 120px;
+    font-size: 150%;
+    color: #eee;
+    float: left;
+    height: 100%;
+}
+.barSection{
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100px;
+    font-size: 150%;
+    color: #eee;
+    float: left;
+    height: 100%;
+}
+.overviewBarSection{
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100px;
+    font-size: 150%;
+    color: #eee;
+    float: left;
+    height: 100%;
+}
+.barLeft{
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    margin-top: 4px;
+    height: 100px;
+}
+.barRight{
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    margin-top: 4px;
+    height: 100px;
+}
+.barMiddle{
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    border-radius: 5px;
+    height: 100%;
+}
+.barSection:hover{
+    filter: brightness(130%);
+    -webkit-filter: brightness(130%);
+    -moz-filter: brightness(130%);
+    -o-filter: brightness(130%);
+    -ms-filter: brightness(130%);
+    text-decoration: underline;
+}
+.sales-color{
+    background: #3D8ECC;
+}
+.aligned-color{
+    background: repeating-linear-gradient(
+      45deg,
+      #6DA542,
+      #6DA542 10px,
+      #73B045 10px,
+      #73B045 20px
+    );
+}
+.marketing-color{
+    background: #F4783B;
+}
+.inactive-color{
+    background: #E1E1E1;
+}
+.infoNumber{
+    color: #3D8ECC;
+    font-size: 100%;
+    font-weight: bold; 
+}
+.positive{
+    color: #6DA542;
+}
+.negative{
+    color: red;
+}
+</style>
+<apex:form >
+    <apex:outputPanel id="mainPanel" styleClass="mainPanel" layout="block">
+        <div id="BarSectionDetailDiv" style="padding: 10px; position: fixed;display:none; background: #E1E1E1; border: 2px solid grey; z-index: 5;border-radius: 0px;"></div>    
+      
+        <apex:outputPanel id="funnelPanel" styleClass="funnelPanel" layout="block" >
+            <apex:outputPanel id="headerPanel" styleClass="headerPanel" layout="block">
+                Account Funnel
+            </apex:outputPanel>
+            
+            <apex:outputPanel id="overViewPanel" styleClass="overViewPanel" layout="block" >
+                <apex:outputPanel id="overViewInfo" styleClass="overViewInfo" layout="block" >
+                    <apex:outputPanel styleClass="overviewSection" layout="block">
+                        <span style="font-size:100%;">All Accounts</span> <br/> <span class="infoNumber" >{!totalAccountsInfluence.allAccounts} </span>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                
+                <apex:outputPanel id="overViewBarWrapper" styleClass="overViewBarWrapper" layout="block" >
+                    <apex:outputPanel id="overViewBar" styleClass="overViewBar" layout="block" >
+                        <apex:outputPanel layout="block" style="width:10%; " styleClass="overviewBarSection inactive-color">
+                        </apex:outputPanel> 
+                        <apex:outputPanel layout="block" rendered="{!totalAccountsInfluence.salesPercentage > 0}" style="width:25%;" styleClass="overviewBarSection sales-color" >
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="block" rendered="{!totalAccountsInfluence.bothPercentage > 0}" style="width:30%; " styleClass="overviewBarSection aligned-color">
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="block" style="width:25%; " styleClass="overviewBarSection marketing-color">
+                        </apex:outputPanel>    
+                        <apex:outputPanel layout="block" rendered="{!totalAccountsInfluence.noActivityAccountsPercentage > 0}" style="width:10%; " styleClass="overviewBarSection inactive-color">
+                        </apex:outputPanel>      
+                    </apex:outputPanel>
+                    
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel styleClass="overViewPanel" layout="block" style="margin-bottom: 20px; margin-top: -30px; ">
+                <apex:outputPanel styleClass="overViewInfo" layout="block" >
+                    <apex:outputPanel styleClass="overviewSection" layout="block" style="vertical-align: bottom; display:block;">
+                        <span style="font-size:100%;"> </span>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <apex:outputPanel id="categoryPanel" styleClass="categoryPanel overViewBarWrapper" layout="block" style="font-size: 200%;">
+                    <div style="width:10%;float: left; border: 1px solid white;visibility:hidden;" >
+                    
+                    </div>
+                    <apex:outputPanel style="width:25%; text-align:center; color: #3D8ECC; float: left; margin-top: 2px;" layout="block">
+                        Sales
+                    </apex:outputPanel>
+                    <apex:outputPanel style="width:30%; text-align:center; color: #6DA542; float: left;margin-top: 2px;" layout="block">
+                        Aligned
+                    </apex:outputPanel>
+                    <apex:outputPanel style="width:25%; text-align:center; color: #F4783B; float: left;margin-top: 2px;" layout="block">
+                        Marketing
+                    </apex:outputPanel>
+                </apex:outputPanel> 
+            </apex:outputPanel>
+            
+            
+            
+            <apex:outputPanel id="activeAccountsPanel" styleClass="funnelRowPanel" layout="block"  >
+                <apex:outputPanel id="activeAccountsInfo" styleClass="funnelInfo" layout="block">
+                    <apex:outputPanel id="activeAccountsInfoBar" styleClass="infoPanel" layout="block" >
+                        <apex:outputPanel styleClass="infoSection" layout="block" style="padding-top:30px;">
+                            <span > Active Accounts <br/> </span><span class="infoNumber" >{!activeAccountsInfluence.totalAccounts}</span>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                
+                <apex:outputPanel id="activeAccountsBarWrapper" styleClass="funnelBarWrapper" layout="block" >
+                    
+                    <apex:outputPanel id="activeAccountsBar" styleClass="funnelBar bar1" layout="block" style="margin-top:-10px;">
+                        <apex:outputPanel onClick="openAccountView('SA');" onmouseover="barHoverText(event,'BarSectionDetailDiv','{!activeAccountsInfluence.salesAccounts} accounts with sales touches only.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')"  layout="block" rendered="{!activeAccountsInfluence.salesPercentage > 0}" style="width:{!activeAccountsInfluence.salesPercentage}%;" styleClass="barSection sales-color {!if(activeAccountsInfluence.salesPercentage == 100 ,'barLeft barRight','barLeft')}" >
+                           {!activeAccountsInfluence.salesPercentage}%
+                        </apex:outputPanel>
+                        <apex:outputPanel onClick="openAccountView('AA');" onmouseover="barHoverText(event,'BarSectionDetailDiv','{!activeAccountsInfluence.bothAccounts} accounts with sales and marketing touches.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')" layout="block" styleClass="middleBarWrapper" rendered="{!activeAccountsInfluence.bothPercentage > 0}" style="width:{!activeAccountsInfluence.bothPercentage}%;" >
+                            <apex:outputPanel layout="block" rendered="{!activeAccountsInfluence.bothPercentage > 0}" style="width:100%; " styleClass="barSection aligned-color barMiddle">
+                               {!activeAccountsInfluence.bothPercentage}%
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                        <apex:outputPanel onClick="openAccountView('MA');" onmouseover="barHoverText(event,'BarSectionDetailDiv','{!activeAccountsInfluence.marketingAccounts} accounts with marketing touches only.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')" layout="block" rendered="{!activeAccountsInfluence.marketingPercentage > 0}" style="width:{!activeAccountsInfluence.marketingPercentage}%;" styleClass="barSection marketing-color {!if(activeAccountsInfluence.marketingPercentage == 100 ,'barLeft barRight','barRight')}">
+                           {!activeAccountsInfluence.marketingPercentage}%
+                        </apex:outputPanel> 
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel id="openOppAccountsPanel" styleClass="funnelRowPanel" layout="block" >
+                <apex:outputPanel id="openOppInfo" styleClass="funnelInfo" layout="block" >
+                    <apex:outputPanel id="openOppAccountsInfoBar" styleClass="infoPanel" layout="block" >
+                        <apex:outputPanel styleClass="infoSection" layout="block" style="padding-top:20px;"> 
+                            <span> Open Opportunities <br/></span><span class="infoNumber" >{!accountsWithOppInfluence.totalAccounts}</span>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <apex:outputPanel id="openOppBarWrapper" styleClass="funnelBarWrapper" layout="block" >
+                    <apex:outputPanel id="openOppBar" styleClass="funnelBar bar2" layout="block" >
+                        <apex:outputPanel layout="block" onClick="openAccountView('SAOO');" onmouseover="barHoverText(event,'BarSectionDetailDiv','{!accountsWithOppInfluence.salesAccounts} accounts with sales touches only.${!accountsWithOppInfluence.totalSalesOnlyOppAmount} in total opportunities.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')" rendered="{!accountsWithOppInfluence.salesPercentage > 0}" style="width:{!accountsWithOppInfluence.salesPercentage}%; " styleClass="barSection sales-color {!if(accountsWithOppInfluence.salesPercentage == 100 ,'barLeft barRight','barLeft')}" >
+                           {!accountsWithOppInfluence.salesPercentage}%
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="block" styleClass="middleBarWrapper" rendered="{!accountsWithOppInfluence.bothPercentage > 0}" style="width:{!accountsWithOppInfluence.bothPercentage}%;" >
+                            <apex:outputPanel layout="block" onClick="openAccountView('AAOO');" onmouseover="barHoverText(event,'BarSectionDetailDiv','{!accountsWithOppInfluence.bothAccounts} accounts with sales and marketing touches.${!accountsWithOppInfluence.totalAlignedOppAmount} in total opportunities.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')" rendered="{!accountsWithOppInfluence.bothPercentage > 0}" style="width:100%; " styleClass="barSection aligned-color barMiddle">
+                               {!accountsWithOppInfluence.bothPercentage}%
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="block" onClick="openAccountView('MAOO');" onmouseover="barHoverText(event,'BarSectionDetailDiv','{!accountsWithOppInfluence.marketingAccounts} accounts with marketing touches only.${!accountsWithOppInfluence.totalMarketingOnlyOppAmount} in total opportunities.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')" rendered="{!accountsWithOppInfluence.marketingPercentage > 0}" style="width:{!accountsWithOppInfluence.marketingPercentage}%; " styleClass="barSection marketing-color {!if(accountsWithOppInfluence.marketingPercentage == 100 ,'barLeft barRight','barRight')}">
+                           {!accountsWithOppInfluence.marketingPercentage}%
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel id="closedOppAccountsPanel" styleClass="funnelRowPanel" layout="block" >
+                <apex:outputPanel id="closedOppInfo" styleClass="funnelInfo" layout="block" >
+                    <apex:outputPanel id="closedOppAccountsInfoBar" styleClass="infoPanel" layout="block" >
+                        <apex:outputPanel styleClass="infoSection" layout="block" style="padding-top:20px;">
+                            <span style="font-size:100%"> Closed Won Opportunities <br/> </span><span class="infoNumber" > {!accountsWithClosedOppsInfluence.totalAccounts}</span>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <apex:outputPanel id="closedOppBarWrapper" styleClass="funnelBarWrapper" layout="block" >
+                    <apex:outputPanel id="closedOppBar" styleClass="funnelBar bar3" layout="block" >
+                        <apex:outputPanel layout="block" onClick="openAccountView('SACWO');" onmouseover="barHoverText(event,'BarSectionDetailDiv','{!accountsWithClosedOppsInfluence.salesAccounts} accounts with sales touch only. ${!accountsWithClosedOppsInfluence.totalSalesOnlyOppAmount} in total opportunities.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')" rendered="{!accountsWithClosedOppsInfluence.salesPercentage > 0}" style="width:{!accountsWithClosedOppsInfluence.salesPercentage}%;" styleClass="barSection sales-color {!if(accountsWithClosedOppsInfluence.salesPercentage == 100 ,'barLeft barRight','barLeft')}" >
+                           {!accountsWithClosedOppsInfluence.salesPercentage}%
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="block" styleClass="middleBarWrapper" rendered="{!accountsWithClosedOppsInfluence.bothPercentage > 0}" style="width:{!accountsWithClosedOppsInfluence.bothPercentage}%;" >
+                            <apex:outputPanel layout="block" onClick="openAccountView('AACWO');"  onmouseover="barHoverText(event,'BarSectionDetailDiv','{!accountsWithClosedOppsInfluence.bothAccounts} accounts with sales and marketing touches. ${!accountsWithClosedOppsInfluence.totalAlignedOppAmount} in total opportunities.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')"  rendered="{!accountsWithClosedOppsInfluence.bothPercentage > 0}" style="width:100%;" styleClass="barSection aligned-color barMiddle">
+                               {!accountsWithClosedOppsInfluence.bothPercentage}%
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                        <apex:outputPanel layout="block" onClick="openAccountView('MACWO');" onmouseover="barHoverText(event,'BarSectionDetailDiv','{!accountsWithClosedOppsInfluence.marketingAccounts} accounts with marketing touches only. ${!accountsWithClosedOppsInfluence.totalMarketingOnlyOppAmount} in total opportunities.')" onmouseout="barHoverText(event,'BarSectionDetailDiv')"  rendered="{!accountsWithClosedOppsInfluence.marketingPercentage > 0}" style="width:{!accountsWithClosedOppsInfluence.marketingPercentage}%;" styleClass="barSection marketing-color {!if(accountsWithClosedOppsInfluence.marketingPercentage == 100 ,'barLeft barRight','barRight')}">
+                           {!accountsWithClosedOppsInfluence.marketingPercentage}%
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        <apex:outputPanel id="graphsPanel" styleClass="graphsPanel" layout="block" >
+             <apex:outputPanel styleClass="metricPanel" layout="block" style="margin-top:110px; height: 115px; vertical-align: middle;">
+                 <apex:outputPanel layout="block" style="padding-top:20px;">
+                     <b>Daily Trend</b> <br/>
+                 </apex:outputPanel>
+                 <apex:outputPanel styleClass="infoSection" layout="block" style="padding-top:10px;">
+                     Accounts Change : &nbsp; 
+                     <apex:outputText value="{0,number,#0}" styleClass="{!if(dailyChange.activeAccountChange >= 0 ,'positive','negative')}" rendered="{!dailyChange.activeAccountChange != null}">
+                        <apex:param value="{!dailyChange.activeAccountChange}" />
+                    </apex:outputText> <br/>
+                     Aligned Change : &nbsp; 
+                     <apex:outputText value="{0,number,#0.00}%" styleClass="{!if(dailyChange.alignedChange >= 0 ,'positive','negative')}" rendered="{!dailyChange.alignedChange != null}">
+                        <apex:param value="{!dailyChange.alignedChange}" />
+                    </apex:outputText>
+                 </apex:outputPanel>
+             </apex:outputPanel>
+             <apex:outputPanel styleClass="metricPanel" layout="block" style="margin-top:20px; height: 115px; vertical-align: middle;">
+                 <apex:outputPanel styleClass="infoSection" layout="block" style="padding-top:30px;">
+                     Accounts Change : &nbsp; 
+                     <apex:outputText value="{0,number,#0}" styleClass="{!if(dailyChange.activeAccountOOChange >= 0 ,'positive','negative')}" rendered="{!dailyChange.activeAccountOOChange != null}">
+                        <apex:param value="{!dailyChange.activeAccountOOChange}" />
+                    </apex:outputText><br/>
+                     Aligned Change : &nbsp; 
+                     <apex:outputText value="{0,number,#0.00}%" styleClass="{!if(dailyChange.alignedChangeOO >= 0 ,'positive','negative')}" rendered="{!dailyChange.alignedChangeOO != null}">
+                        <apex:param value="{!dailyChange.alignedChangeOO}" />
+                    </apex:outputText>                 </apex:outputPanel>
+             </apex:outputPanel>
+             <apex:outputPanel styleClass="metricPanel" layout="block" style="margin-top:20px; height: 115px; vertical-align: middle;" >
+                 <apex:outputPanel styleClass="infoSection" layout="block" style="padding-top:30px;">
+                     Accounts Change : &nbsp; 
+                     <apex:outputText value="{0,number,#0}" styleClass="{!if(dailyChange.activeAccountCWOChange >= 0 ,'positive','negative')}" rendered="{!dailyChange.activeAccountCWOChange != null}">
+                        <apex:param value="{!dailyChange.activeAccountCWOChange}" />
+                    </apex:outputText><br/>
+                     Aligned Change : &nbsp; 
+                     <apex:outputText value="{0,number,#0.00}%" styleClass="{!if(dailyChange.alignedChangeCWO >= 0 ,'positive','negative')}" rendered="{!dailyChange.alignedChangeCWO != null}">
+                        <apex:param value="{!dailyChange.alignedChangeCWO}" />
+                    </apex:outputText>
+                 </apex:outputPanel>
+             </apex:outputPanel>
+
+        </apex:outputPanel>
+    </apex:outputPanel>
+
+</apex:form>
+</apex:page>

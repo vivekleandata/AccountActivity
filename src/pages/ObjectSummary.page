@@ -1,0 +1,155 @@
+<apex:page sideBar="false" controller="objectSummaryController" >
+    <apex:includeScript value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/external/jquery/jquery.js')}"  />
+    <apex:includeScript value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/jquery-ui.min.js')}"  />
+    
+    <apex:stylesheet value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/jquery-ui.css')}"  />
+    
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet" media="screen"/>
+    <apex:includeScript value="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"/>
+    <apex:stylesheet value="{!URLFOR($Resource.AccountActivityResources, 'AccountActivityResources/css/style.css')}"  />
+
+    
+    <script>
+    function doSearch() {
+        runFilterAF();
+    }
+    j$ = jQuery.noConflict();
+    function toggleCampaignType(){
+        j$('.searchPanel').toggle(300);
+    }
+    </script>
+    <style>
+    .greyButton{
+    }
+    .greyButton:hover{
+        opacity: 0.5;
+        border: 1px solid grey;
+    }
+    .filterTextPanel{
+            background: #6DA542;
+    }
+    .opaqueButton{
+        color:black;
+        background:#E1E1E1;
+        Opacity: .5;
+    }
+    .opaqueButton:hover{
+        opacity: 1.0;
+        color: black;
+    }
+    .paginationTable{
+        margin-right: 20px;
+    }
+    </style>
+    <apex:form >
+        <apex:actionFunction name="runFilterAF" action="{!runFullSearch}" rerender="contentPanel" />
+        <div style="width:100%; background: #3D8ECC; color: white; font-size:200%; padding-left: 50px;padding-top:10px;padding-bottom:10px;">
+             {!objLabel} View &nbsp;
+             <apex:commandLink onClick="toggleCampaignType();" rerender="x" style="font-decoration:none; color:white;"><i class="glyphicon glyphicon-search"></i></apex:commandLink>
+        </div>
+          <apex:outputPanel style="float:left; padding: 10px;padding-top:20px; display:none;" layout="block" id="searchPanel" styleClass="searchPanel" >
+              <apex:outputPanel layout="block" id="searchInputs" >
+              <table width="100%" styleClass="statsTable">
+                <tr>
+                  <td style="font-size:120%; font-weight: bold;padding-left:10px;" >Search </td> 
+                  <td><apex:commandLink action="{!TurnOffFilter}" value="Clear" styleClass="leanDataButton greyButton" style="background: #E1E1E1; color: #3D8ECC;border:none;" rerender="contentPanel, searchInputs"  onComplete="toggleCampaignType();" /></td>
+                </tr>
+                
+                <apex:repeat value="{!searchDummy}" var="D">
+                     <tr>
+                         <td colspan="2" style="padding: 10px;">                                                                   
+                                <apex:inputText value="{!D.stringValue}" required="false" onKeyUp="doSearch();" html-placeholder="{!D.field.label}" />                       
+                               <!-- <apex:selectList value="{!D.dummy.Field1__c}" size="1" onChange="doSearch();" rendered="{!D.Field.Label=='Enabled'}">
+                                    <apex:selectOptions value="{!EnabledSelectOptions}"></apex:selectOptions>
+                                </apex:selectList> -->
+                         </td>
+                     </tr>        
+                </apex:repeat>                                      
+                 <!---------------------Lets you search for Scenarios in Test Suite, or Functions in Scenarios-------------->                        
+              </table>
+              </apex:outputPanel>
+          </apex:outputPanel>
+         
+          <!--main content-->        
+          <apex:outputpanel id="contentPanel" layout="block" style="width: 100%;padding-top: 10px;">        
+              <div  >
+
+                <div style="position: relative;">
+                    <apex:outputpanel >
+                        <apex:actionstatus id="loadingStatus">
+                            <apex:facet name="start">
+                                <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;
+                                       height: 20px;margin-bottom:30px;margin-left:10px;opacity:0.65;width:100%;"> 
+                                    <div class="waitingHolder" >
+                                        <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                                        <span class="waitingDescription">Loading...</span>
+                                    </div>
+                                </div>
+                            </apex:facet>
+                        </apex:actionstatus>
+                    </apex:outputpanel>
+                </div>
+            <apex:outputPanel id="summaryPanel" style="height:677px;overflow-y:auto;padding: 10px;font-size: 90%%;" layout="block">
+            <apex:pagemessages />
+            <apex:outputPanel styleClass="filterTextPanel" layout="block" rendered="{!specialQueryText!=null}" style="margin-bottom:5px;padding-left:15px;padding-top:5px;padding-bottom: 5px;color:black;"><b>{!specialQueryText} &nbsp;</b><apex:commandLink styleClass="leanDataButton opaqueButton" value="Clear Filter" action="{!resetSpecialQueryMode}" rerender="contentPanel,searchPanel" /> </apex:outputPanel>
+            <table width="100%" id="summaryTable" >
+              <thead>
+                <tr style="background: #E1E1E1;">
+                   <!--  <th style="width:30px;" class="right-white-border">
+                         <apex:inputCheckbox value="{!isSelectAll}">
+                             <apex:actionSupport event="onclick" action="{!selectAll}" rerender="contentPanel" />
+                         </apex:inputCheckbox>                     
+                     </th> -->
+                     <apex:repeat value="{!displayFields}" var="f">                        
+                         <th style="border-left: 1px solid #E1E1E1; padding: 5px;"><apex:commandLink value="{!f.Label}" action="{!toggleSort}" rerender="summaryTable,RelatedListsPanel,RelatedHeader,contentPanel" oncomplete="bindTable();" >
+                             <apex:param name="sortField" value="{!f.fieldpath}" assignTo="{!sortField}"/>
+                         </apex:commandLink></th>
+                         </apex:repeat>
+                 </tr>
+              </thead>
+              <tbody>
+                <apex:repeat value="{!objectList}" var="Item">
+                    <tr id="{!Item.Obj.id}" >
+                       <!-- <td>
+                        <apex:inputCheckbox value="{!Item.selected}" />                  
+                        </td> -->
+                        <apex:repeat value="{!displayFields}" var="f">
+                        <td style="border-left: 1px solid #E1E1E1; vertical-align:top;padding: 5px;">                        
+                            <apex:outputPanel >     
+                                    <apex:outputLink value="/{!Item.Obj['Id']}"  rendered="{!f.FieldPath == 'Name'}" target="_blank" >{!Item.Obj[f.fieldPath]} </apex:outputLink>       
+                                    <apex:outputField value="{!Item.Obj[f.fieldPath]}" rendered="{!f.FieldPath != 'Name'}"/>                   
+                            </apex:outputPanel>                        
+                       </td>
+                       </apex:repeat>                                                           
+                   </tr>
+                </apex:repeat>
+            </tbody>             
+            </table> 
+            <div style="float:right;" >
+            <table class="paginationTable">
+            <tr>
+            <td>
+            <apex:commandLink action="{!first}" rerender="contentPanel" >First</apex:commandlink>
+            </td><td>
+            <apex:commandLink action="{!previous}" rendered="{!hasPrevious}" rerender="contentPanel" style="margin-left: 20px;">Previous</apex:commandlink>
+            </td><td>
+            <apex:commandLink action="{!next}" rendered="{!hasNext}" rerender="contentPanel" style="margin-left: 20px;">Next</apex:commandlink>
+            </td><td>
+            <apex:commandLink action="{!last}" rerender="contentPanel" style="margin-left: 20px;">Last</apex:commandlink>
+            </td>
+            <td>
+            <b style="margin-left: 20px;"> Page {!pageNumber} </b>
+            </td>
+            </tr>
+            </table>
+            </div>
+            </apex:outputPanel>
+          </div>
+          <!--end main content-->
+        </apex:outputpanel>
+             
+
+
+
+    </apex:form>
+</apex:page>

@@ -128,22 +128,31 @@ public with sharing class AccountScoreSettingsController {
         delete ( oldSettings );
         
         List<Activity_Score_Setting__c> newSettings = new List<Activity_Score_Setting__c>();
+        Integer i = 0;
         
         for( genericSelector CMS : CampaignMemberStatusList ){
-            if( CMS.isSelected )
-                newSettings.add( new Activity_Score_Setting__c( Type__c ='CampaignMemberStatus', Value__c = CMS.selectorLabel , Name = 'CampaignMemberStatus' + CMS.selectorLabel));
+            if( CMS.isSelected ){
+                newSettings.add( new Activity_Score_Setting__c( Type__c ='CampaignMemberStatus', Value__c = CMS.selectorLabel , Name = 'Setting' + i));
+                i++;
+            }
         }
         for( genericSelector TT : TaskTypeList ){
-            if( TT.isSelected )
-                newSettings.add( new Activity_Score_Setting__c( Type__c ='TaskType', Value__c = TT.selectorLabel, Name = 'TaskType' + TT.selectorLabel));
+            if( TT.isSelected ){
+                newSettings.add( new Activity_Score_Setting__c( Type__c ='TaskType', Value__c = TT.selectorLabel, Name = 'Setting' + i));
+                i++;
+            }
         }
         for( genericSelector ET : EventTypeList ){
-            if( ET.isSelected )
-                newSettings.add( new Activity_Score_Setting__c( Type__c ='EventType', Value__c = ET.selectorLabel, Name = 'EventType' + ET.selectorLabel));
+            if( ET.isSelected ){
+                newSettings.add( new Activity_Score_Setting__c( Type__c ='EventType', Value__c = ET.selectorLabel, Name = 'Setting' + i ));
+                i++;
+            }
         }
         for( genericSelector TS : TaskStatusList ){
-            if( TS.isSelected )
-                newSettings.add( new Activity_Score_Setting__c( Type__c ='TaskStatus', Value__c = TS.selectorLabel, Name = 'TaskStatus' + TS.selectorLabel));
+            if( TS.isSelected ){
+                newSettings.add( new Activity_Score_Setting__c( Type__c ='TaskStatus', Value__c = TS.selectorLabel, Name = 'Setting' + i ));
+                i++;
+            }
         }
         
         if( dayRange == null )
@@ -155,7 +164,7 @@ public with sharing class AccountScoreSettingsController {
     }
     public void runAccountScoring(){
         saveAccountScoringSettings();
-        database.executeBatch(new AccountScoringBatch( ) );        
+        database.executeBatch(new AccountScoringBatch( 'One Time') );        
     }
     public void scheduleAccountScoring(){
         saveAccountScoringSettings();

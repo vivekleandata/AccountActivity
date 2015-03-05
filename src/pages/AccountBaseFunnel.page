@@ -1,0 +1,347 @@
+<apex:page sideBar="false" controller="AccountBaseFunnelController" standardStylesheets="false" >
+
+<apex:includeScript value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/external/jquery/jquery.js')}"  />
+<apex:includeScript value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/jquery-ui.min.js')}"  />
+
+<apex:stylesheet value="{!URLFOR($Resource.AccountActivityJQuery, 'jquery-ui-1.11.2.custom/jquery-ui.css')}"  />
+<!--
+<apex:includeScript value="{!URLFOR($Resource.ChartsJs, 'Chart.js-master/Chart.js')}"  />
+-->
+
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet" media="screen"/>
+<apex:includeScript value="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"/>
+
+<script>
+    $( document ).ready(function() {
+        $( '.selectorPanel' ).click(function() {
+          $( this ).toggleClass( "isSelected" );
+          $( this ).toggleClass( "notSelected" );
+          $( this ).find('input[type=checkbox]').prop('checked', ($( this ).find('input[type=checkbox]').prop('checked')) ? false : true);
+        });
+        
+        $( '.toggleAccountType' ).click(function() {
+            $( '.accountTypeTable' ).toggle('slide',300);
+        });
+        
+        $( '.toggleOpportunityStage' ).click(function() {
+            $( '.opportunityStageTable' ).toggle('slide',300);
+        });
+        
+        $( '.toggleCustomField' ).click(function() {
+            $( '.customFieldTable' ).toggle('slide',300);
+        });
+    });
+    
+</script>
+
+<style>
+.graphSection{
+    text-align: center;
+    vertical-align: middle;
+    line-height: 125px;
+    font-size: 150%;
+    color: #eee;
+    float: left;
+    height: 100%;
+}
+.leanDataButton{
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    border-radius:3px;
+    border:1px solid #0b0e07;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family:arial;
+    font-size:12px;
+    padding:5px 12px;
+    text-decoration:none !important;
+    text-align: center;
+}
+.greyButton{
+    color: #333;
+    margin: 1px;
+    padding: 2px 3px;
+    border: 1px solid #b5b5b5;
+    border-bottom-color: #7f7f7f;
+    background: #e8e8e9;
+}
+.greyButton:hover{
+    background: white;
+}
+.buttonBar td{
+    padding: 5px;
+}    
+.horizontalTable{
+    width: 1000px;
+    border: 1px solid transparent;
+}
+.horizontalTable td{
+   padding: 3px;
+   display: table-cell;
+   text-align: center;
+   vertical-align: middle;
+}
+.selectorPanel{
+    padding : 7px 10px;
+    color: black;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    border-radius:3px;
+    border:1px solid #0b0e07;
+    display:inline-block;
+    cursor:pointer;
+    width: 100%;
+
+    font-size: 85%;
+    
+}
+.isSelected{
+    background: #61BD5F;
+    color:white;
+}
+.notSelected{
+    border: red solid 1px;
+}
+.funnelBar{
+    text-align:center;
+    margin-top: 5px;
+}
+.sales{
+    background: #3D8ECC;
+}
+.both{
+    background: #6DA542;
+}
+.marketing{
+    background: #F4783B;
+}
+.noActivity{
+    background: grey;
+}
+.infoPanel{
+    background: #e8e8e9; width: 100%;
+        -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    border-radius:3px;
+}
+.barHeight{
+    height: 125px;
+}
+</style>
+<apex:form >
+    <apex:outputPanel id="mainPanel" > 
+        
+    <table>
+    <tr >
+    <td style="padding:0px;">
+    <apex:outputPanel id="funnelPanel" layout="block" style="width:1000px; text-align:center;">
+        <span style="font-size: 200%;width: 100%;"> Account Based Marketing Funnel </span>
+        <apex:outputPanel layout="block" style="text-align:center;width:1000px; height:100px; background: #AB0000; color:white;" rendered="{!totalAccountsInfluence.totalAccounts == 0}">
+            <apex:outputPanel layout="block" styleClass="graphSection" style="width:100%">
+                No Accounts Found.
+            </apex:outputPanel>
+        </apex:outputPanel>
+        <apex:outputPanel styleClass="funnelBar barHeight" layout="block" style="width:1000px;" rendered="{!totalAccountsInfluence.totalAccounts > 0}">
+                <apex:outputPanel layout="block" rendered="{!totalAccountsInfluence.noActivityAccountsPercentage > 0}" style="width:{!totalAccountsInfluence.noActivityAccountsPercentage}%; " styleClass="graphSection noActivity">
+                   {!totalAccountsInfluence.noActivityAccountsPercentage}%
+                </apex:outputPanel> 
+                <apex:outputPanel layout="block" rendered="{!totalAccountsInfluence.salesPercentage > 0}" style="width:{!totalAccountsInfluence.salesPercentage}%;" styleClass="graphSection sales" >
+                   {!totalAccountsInfluence.salesPercentage}%
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" rendered="{!totalAccountsInfluence.bothPercentage > 0}" style="width:{!totalAccountsInfluence.bothPercentage}%; " styleClass="graphSection both">
+                   {!totalAccountsInfluence.bothPercentage}%
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" rendered="{!totalAccountsInfluence.marketingPercentage > 0}" style="width:{!totalAccountsInfluence.marketingPercentage}%; " styleClass="graphSection marketing">
+                   {!totalAccountsInfluence.marketingPercentage}%
+                </apex:outputPanel>             
+        </apex:outputPanel>
+        
+        <apex:outputPanel layout="block" stylecLass="barHeight" style="margin-left:100px; text-align:center;width:800px; background: #AB0000; color:white;" rendered="{!activeAccountsInfluence.totalAccounts == 0}">
+            <apex:outputPanel layout="block" styleClass="graphSection" style="width:100%">
+                No Accounts Found.
+            </apex:outputPanel>
+        </apex:outputPanel>
+        <apex:outputPanel styleClass="funnelBar barHeight" layout="block" style="margin-left:100px;width:800px;" rendered="{!activeAccountsInfluence.totalAccounts > 0}">
+                <apex:outputPanel layout="block" rendered="{!activeAccountsInfluence.salesPercentage > 0}" style="width:{!activeAccountsInfluence.salesPercentage}%;" styleClass="graphSection sales" >
+                   {!activeAccountsInfluence.salesPercentage}%
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" rendered="{!activeAccountsInfluence.bothPercentage > 0}" style="width:{!activeAccountsInfluence.bothPercentage}%; " styleClass="graphSection both">
+                   {!activeAccountsInfluence.bothPercentage}%
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" rendered="{!activeAccountsInfluence.marketingPercentage > 0}" style="width:{!activeAccountsInfluence.marketingPercentage}%; " styleClass="graphSection marketing">
+                   {!activeAccountsInfluence.marketingPercentage}%
+                </apex:outputPanel>              
+        </apex:outputPanel>
+        
+        <apex:outputPanel layout="block" styleClass="barHeight" style="text-align:center;margin-top:5px;margin-left:200px;width:600px; background: #AB0000; color:white;" rendered="{!accountsWithOppInfluence.totalAccounts == 0}">
+            <apex:outputPanel layout="block" styleClass="graphSection" style="width:100%">
+                No Accounts Found.
+            </apex:outputPanel>
+        </apex:outputPanel>
+        <apex:outputPanel styleClass="funnelBar barHeight" layout="block" style="width:600px; margin-left: 200px;" rendered="{!accountsWithOppInfluence.totalAccounts > 0}">
+                <apex:outputPanel layout="block" rendered="{!accountsWithOppInfluence.salesPercentage > 0}" style="width:{!accountsWithOppInfluence.salesPercentage}%; " styleClass="graphSection sales" >
+                   {!accountsWithOppInfluence.salesPercentage}%
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" rendered="{!accountsWithOppInfluence.bothPercentage > 0}" style="width:{!accountsWithOppInfluence.bothPercentage}%; " styleClass="graphSection both">
+                   {!accountsWithOppInfluence.bothPercentage}%
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" rendered="{!accountsWithOppInfluence.marketingPercentage > 0}" style="width:{!accountsWithOppInfluence.marketingPercentage}%; " styleClass="graphSection marketing">
+                   {!accountsWithOppInfluence.marketingPercentage}%
+                </apex:outputPanel>
+        </apex:outputPanel>
+        
+        <apex:outputPanel layout="block" styleClass="barHeight" style="text-align:center;margin-top:5px;margin-left:300px;width:400px; ; background: #AB0000; color:white;" rendered="{!accountsWithClosedOppsInfluence.totalAccounts == 0}">
+            <apex:outputPanel layout="block" styleClass="graphSection" style="width:100%">
+                No Accounts Found.
+            </apex:outputPanel>
+        </apex:outputPanel>
+        <apex:outputPanel styleClass="funnelBar barHeight" layout="block" style="width:400px; margin-left: 300px;" rendered="{!accountsWithClosedOppsInfluence.totalAccounts > 0}">
+                <apex:outputPanel layout="block" rendered="{!accountsWithClosedOppsInfluence.salesPercentage > 0}" style="width:{!accountsWithClosedOppsInfluence.salesPercentage}%; " styleClass="graphSection sales" >
+                   {!accountsWithClosedOppsInfluence.salesPercentage}%
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" rendered="{!accountsWithClosedOppsInfluence.bothPercentage > 0}" style="width:{!accountsWithClosedOppsInfluence.bothPercentage}%;" styleClass="graphSection both">
+                   {!accountsWithClosedOppsInfluence.bothPercentage}%
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" rendered="{!accountsWithClosedOppsInfluence.marketingPercentage > 0}" style="width:{!accountsWithClosedOppsInfluence.marketingPercentage}%;" styleClass="graphSection marketing">
+                   {!accountsWithClosedOppsInfluence.marketingPercentage}%
+                </apex:outputPanel>
+        </apex:outputPanel>              
+    </apex:outputPanel>
+    </td>
+    <td style="padding:0px;vertical-align:top;padding-left:5px;">
+    <apex:outputPanel layout="block" style="width:320px; text-align:center;">
+            
+            <apex:outputPanel layout="block" style="margin-top:45px;margin-bottom: 5px;padding-top:5px;" styleClass="infoPanel barHeight">
+                <span style="font-size: 120%;font-weight: bold;">All Accounts</span>
+                
+                <apex:outputPanel layout="block" style="font-size: 90%; width:100%; text-align:left;padding-left: 10px; padding-top: 2px;">
+                    Total Accounts :  {!TotalAccounts} <br/>
+                    Sales Touches :  {!totalAccountsInfluence.salesAccounts} <br/>
+                    Sales and Marketing Touches : {!totalAccountsInfluence.bothAccounts}  <br/>
+                    Marketing Touches : {!totalAccountsInfluence.marketingAccounts} <br/>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel layout="block" style=" margin-bottom: 5px; padding-top:5px;" styleClass="infoPanel barHeight">
+                <span style="font-size: 120%;font-weight: bold;">Active Accounts</span>
+                
+                <apex:outputPanel layout="block" style="font-size: 90%; width:100%; text-align:left;padding-left: 10px; padding-top: 5px;">
+                    Sales Touches :  {!activeAccountsInfluence.salesAccounts} <br/>
+                    Sales and Marketing Touches : {!activeAccountsInfluence.bothAccounts}  <br/>
+                    Marketing Touches : {!activeAccountsInfluence.marketingAccounts} <br/>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel layout="block" style="margin-bottom: 5px;padding-top:5px;" styleClass="infoPanel barHeight">
+                <span style="font-size: 120%;font-weight: bold;">Accounts with Open Opportunities</span>
+                
+                <apex:outputPanel layout="block" style="font-size: 90%; width:100%; text-align:left;padding-left: 10px;padding-top: 5px;">
+                    Sales Touches :  {!accountsWithOppInfluence.salesAccounts} <br/>
+                    Sales and Marketing Touches : {!accountsWithOppInfluence.bothAccounts}  <br/>
+                    Marketing Touches : {!accountsWithOppInfluence.marketingAccounts} <br/>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <apex:outputPanel layout="block" style="padding-top:5px; " styleClass="infoPanel barHeight">
+                <span style="font-size: 110%;font-weight: bold;">Accounts with Closed Won Opportunities</span>
+                
+                <apex:outputPanel layout="block" style="font-size: 90%; width:100%; text-align:left;padding-left: 10px;padding-top: 5px;">
+                    Sales Touches :  {!accountsWithClosedOppsInfluence.salesAccounts} <br/>
+                    Sales and Marketing Touches : {!accountsWithClosedOppsInfluence.bothAccounts}  <br/>
+                    Marketing Touches : {!accountsWithClosedOppsInfluence.marketingAccounts} <br/>
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+    </td>
+    </tr>
+    </table>
+    <apex:outputPanel layout="block" style="width: 1000px; text-align:center;margin-top:30px;">
+        <span style="font-size: 200%;width: 100%;"> Account Impact Tool </span>
+        
+        <apex:outputPanel layout="block" id="filterPanel" style="padding: 10px;">
+            
+            <table class="buttonBar" style="margin-left:250px;">
+            <tr>
+            <td>
+            <apex:commandLink value="Account Type" rerender="x" style="font-size: 16px; padding: 5px 10px;" styleClass="leanDataButton greyButton toggleAccountType"/>
+            </td>
+            <td>    
+            <apex:commandLink value="Opportunity Stage" rerender="x" style="font-size: 16px; padding: 5px 10px;" styleClass="leanDataButton greyButton toggleOpportunityStage"/>
+            </td>
+            <td>
+            <apex:commandLink value="Custom Field" rerender="x" style="font-size: 16px; padding: 5px 10px;" styleClass="leanDataButton greyButton toggleCustomField"/>
+            </td>
+            <td>
+            <apex:commandLink value="Filter" action="{!buildReport}" rerender="chartPanel" style="font-size: 16px; padding: 5px 10px;" styleClass="leanDataButton greyButton" status="loadStatus" />
+            </td>
+            </tr>
+            </table>
+            
+            <table class="horizontalTable accountTypeTable" style="display:none;" >
+                 <apex:repeat value="{!accountTypeSelector}" var="T" >
+                <tr>
+                <apex:repeat value="{!T}" var="A" >
+                <td>
+                    <apex:outputPanel styleClass="selectorPanel isSelected" >
+                                        <apex:inputCheckBox styleClass="AccountType:{!A.Label}" value="{!A.isSelected}" style="display:none;"  />
+                        {!A.Label}
+                    </apex:outputPanel>
+                </td>
+                </apex:repeat>
+                </tr>
+                </apex:repeat>
+            </table>
+            
+            <table class="horizontalTable opportunityStageTable" style="display:none;" >
+                <apex:repeat value="{!opportunityStageSelector}" var="T" >
+    
+                <tr>
+                <apex:repeat value="{!T}" var="A" >
+                <td>
+                    <apex:outputPanel styleClass="selectorPanel isSelected" >
+                                        <apex:inputCheckBox styleClass="AccountType:{!A.Label}" value="{!A.isSelected}" style="display:none;"  />
+                        {!A.Label}
+                    </apex:outputPanel>
+                </td>
+                </apex:repeat>
+                </tr>
+                </apex:repeat>
+            </table>    
+            
+            <table class="horizontalTable customFieldTable" style="display:none;" >
+                <tr>
+                    <td> Custom Field API Name </td> <td> <apex:inputText value="{!customFieldName}" /> </td>
+                </tr>
+                <tr>
+                    <td> Custom Field Value </td><td> <apex:inputText value="{!customFieldValue}" /> </td>
+                </tr>
+            
+            </table>
+            
+            </apex:outputPanel>
+    
+            <apex:outputPanel layout="block" id="chartPanel" style="padding: 10px;" >
+                <apex:pageMessages />
+                <apex:outputPanel layout="block" style="width:1000px; height:100px; background: #F4783B; color:white;" rendered="{!customAccountsInfluence.totalAccounts == 0}">
+                    <apex:outputPanel layout="block" style="width:1000px;" styleClass="graphSection">
+                        No Accounts Found.
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                <apex:outputPanel layout="block" style="width:1000px; height:100px;" rendered="{!customAccountsInfluence.totalAccounts > 0}">
+                    <apex:outputPanel layout="block" rendered="{!customAccountsInfluence.salesPercentage > 0}" style="width:{!customAccountsInfluence.salesPercentage}%;" styleClass="graphSection sales" >
+                       {!customAccountsInfluence.salesPercentage}%
+                    </apex:outputPanel>
+                    <apex:outputPanel layout="block" rendered="{!customAccountsInfluence.bothPercentage > 0}" style="width:{!customAccountsInfluence.bothPercentage}%;" styleClass="graphSection both">
+                       {!customAccountsInfluence.bothPercentage}%
+                    </apex:outputPanel>
+                    <apex:outputPanel layout="block" rendered="{!customAccountsInfluence.marketingPercentage > 0}" style="width:{!customAccountsInfluence.marketingPercentage}%;" styleClass="graphSection marketing">
+                       {!customAccountsInfluence.marketingPercentage}%
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </apex:outputPanel>
+        </apex:outputPanel>
+    </apex:outputPanel>
+</apex:form>
+</apex:page>
