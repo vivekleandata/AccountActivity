@@ -1,0 +1,14 @@
+<apex:page controller="TargetAccountDefinitionsController" >
+    <apex:pageMessages />
+    <apex:form rendered="true">
+        <apex:selectList size="1" value="{!newSetting.fieldName}">
+            <apex:selectOptions value="{!accountFields}" />
+        </apex:selectList>
+        <apex:selectList size="1" value="{!newSetting.operator}">
+            <apex:selectOptions value="{!operatorOptions}" />
+        </apex:selectList>
+        <apex:inputText value="{!newSetting.unparsedValues}" />
+        <apex:commandButton action="{!validateNewSetting}" value="Validate Setting"/>
+        <apex:commandButton action="{!saveNewSettingFromWrapper}" value="{!action}"/>
+    </apex:form>
+</apex:page>
